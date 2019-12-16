@@ -84,40 +84,43 @@ def analyze(file):
     T3 = TTree("T3","Peak voltage per Event")
     T3.SetAutoSave(0)
 
-    peak1 = np.zeros(nentries,dtype=np.float32)
-    peak2 = np.zeros(nentries,dtype=np.float32)
-    peak3 = np.zeros(nentries,dtype=np.float32)
+    peak1 = np.zeros(1,dtype=np.float32)
+    peak2 = np.zeros(1,dtype=np.float32)
+    peak3 = np.zeros(1,dtype=np.float32)
 
-    T3.Branch('peak1',peak1,'peak1'+str(nentries)+'/F')
-    T3.Branch('peak2',peak2,'peak2'+str(nentries)+'/F')
-    T3.Branch('peak3',peak3,'peak3'+str(nentries)+'/F')
+    T3.Branch('event',ev,'event/I')
+    T3.Branch('peak1',peak1,'peak1[1]/F')
+    T3.Branch('peak2',peak2,'peak2[1]/F')
+    T3.Branch('peak3',peak3,'peak3[1]/F')
 
 
     # Creacon de otro nuevo arbol
     T4 = TTree("T4","Average Peak voltage  per Event")
     T4.SetAutoSave(0)
 
-    avgPeak1 = np.zeros(nentries,dtype=np.float32)
-    avgPeak2 = np.zeros(nentries,dtype=np.float32)
-    avgPeak3 = np.zeros(nentries,dtype=np.float32)
+    avgPeak1 = np.zeros(1,dtype=np.float32)
+    avgPeak2 = np.zeros(1,dtype=np.float32)
+    avgPeak3 = np.zeros(1,dtype=np.float32)
 
-    T4.Branch('avgPeak1',avgPeak1,'avgPeak1'+str(nentries)+'/F')
-    T4.Branch('avgPeak2',avgPeak2,'avgPeak2'+str(nentries)+'/F')
-    T4.Branch('avgPeak3',avgPeak3,'avgPeak3'+str(nentries)+'/F')
+    T4.Branch('event',ev,'event/I')
+    T4.Branch('avgPeak1',avgPeak1,'avgPeak1[1]/F')
+    T4.Branch('avgPeak2',avgPeak2,'avgPeak2[1]/F')
+    T4.Branch('avgPeak3',avgPeak3,'avgPeak3[1]/F')
 
 
 
     # Calculo del peak de voltaje (peak absoluto y medio)
 
     print("Reading Data...")
-    peakCh1 = 0
-    peakCh2 = 0
-    peakCh3 = 0
-    avgPeakCh1 = 0
-    avgPeakCh2 = 0
-    avgPeakCh3 = 0
     for ev in tqdm(range(0,nentries)): 
         data.GetEntry(ev)
+
+        peakCh1 = 0
+        peakCh2 = 0
+        peakCh3 = 0
+        avgPeakCh1 = 0
+        avgPeakCh2 = 0
+        avgPeakCh3 = 0
 
         #lectura de muestras
         for j in range(625,1125,1):
@@ -134,18 +137,18 @@ def analyze(file):
                 peakCh3 = data.ampCh3[j]
                 samplePeakCh3 = j
 
-        peak1[ev] = peakCh1
-        peak2[ev] = peakCh2   
-        peak3[ev] = peakCh3    
+        peak1[0] = np.float32(peakCh1)
+        peak2[0] = np.float32(peakCh2)  
+        peak3[0] = np.float32(peakCh3)   
         T3.Fill()
 
         for k in range(60):  
             avgPeakCh1+=data.ampCh1[samplePeakCh1-30+k]
             avgPeakCh2+=data.ampCh2[samplePeakCh2-30+k]
             avgPeakCh3+=data.ampCh3[samplePeakCh3-30+k]
-        avgPeak1[ev] = avgPeakCh1/60.0
-        avgPeak2[ev] = avgPeakCh2/60.0
-        avgPeak3[ev] = avgPeakCh3/60.0
+        avgPeak1[0] = np.float32(avgPeakCh1/60.0)
+        avgPeak2[0] = np.float32(avgPeakCh2/60.0)
+        avgPeak3[0] = np.float32(avgPeakCh3/60.0)
         T4.Fill()
 
 

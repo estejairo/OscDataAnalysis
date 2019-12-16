@@ -17,7 +17,7 @@ import Tkconstants, tkFileDialog, tkSimpleDialog
 import time
 from tqdm import tqdm #libreria para visualizar porcentaje restante
 
-from experiments import analyse
+from experiments import analyze
 
 ROOT = tk.Tk()
 ROOT.withdraw()

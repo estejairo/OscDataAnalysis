@@ -9,7 +9,7 @@
 #
 ###########################################################
 
-from experiments import select
+from experiments import select, analyze
 
 
 EVENTOS = 2000
@@ -27,7 +27,7 @@ file_input = "../../data/na22-free-rigth.root"
 #                                     ("all files","*.*")))
 
 select(file_input,ref_init_noise_rms,ref_mid_noise_rms)
-
+analyze(file_input)
 
 
 

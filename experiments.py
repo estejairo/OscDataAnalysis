@@ -10,7 +10,7 @@
 ###########################################################
 
 
-from ROOT import  TFile,TTree
+from ROOT import  TFile,TTree,TH1F,TH2F,TGraph,TMultiGraph,TCanvas,TPaveStats,gStyle
 import numpy as np
 import time
 from tqdm import tqdm #libreria para visualizar porcentaje restante
@@ -23,10 +23,10 @@ from tqdm import tqdm #libreria para visualizar porcentaje restante
 #   Selecciona los eventos del archivo file_input que
 #   posean ruido rms menor a las referencias de ruido al
 #   inicio y al medio del eventi (ref_init_noise_rms y 
-#   ref_mid_noise_rms respectivamente.)
+#   ref_final_noise_rms respectivamente.)
 #
 ###########################################################
-def select(file_input,ref_init_noise_rms,ref_mid_noise_rms):
+def select(file_input,ref_init_noise_rms,ref_final_noise_rms):
     print("Starting Selection Algorithm...")
     # Abriendo archivos y cargando arboles
     print("Open file: "+file_input)
@@ -43,7 +43,7 @@ def select(file_input,ref_init_noise_rms,ref_mid_noise_rms):
     # lectura de eventos. se seleccionan los que cumplan
     #  las restricciones
     init_noise_rms = 0
-    mid_noise_rms = 0
+    final_noise_rms = 0
     print("Selecting events...")
     for h in tqdm(range(0,nentries,1)): #incluye estado porcentual
         data.GetEntry(h)
@@ -54,13 +54,13 @@ def select(file_input,ref_init_noise_rms,ref_mid_noise_rms):
         init_noise_rms = np.sqrt(init_noise_rms/i)
 
         #Ruido RMS al medio del evento (siguientes 500 muestras)
-        for j in range(625,1125,1):
-            mid_noise_rms += np.power(data.ampCh1[j],2) 
-        mid_noise_rms = np.sqrt(mid_noise_rms/i)
+        for j in range(1125,2502,1):
+            final_noise_rms += np.power(data.ampCh1[j],2) 
+        final_noise_rms = np.sqrt(final_noise_rms/i)
 
         # Se guarda el evento en el nuevo arbol,
         #  solo si cumple condicion
-        if ((init_noise_rms < ref_init_noise_rms)and(mid_noise_rms < ref_mid_noise_rms)):
+        if ((init_noise_rms < ref_init_noise_rms)and(final_noise_rms < ref_final_noise_rms)):
             T2.Fill()
     
     #se sobreescribe el nuevo arbol en el archivo original
@@ -156,4 +156,103 @@ def analyze(file):
     T3.Write("",TFile.kOverwrite) 
     T4.Write("",TFile.kOverwrite) 
     F1.Close()
+    return
+
+def graphAnalysis(file_input,experiment,keyword):
+
+    ##Graphs
+
+    F1 = TFile(file_input,'read')
+    selectedData = F1.Get('T2')
+    averageData = F1.Get('T4')
+
+    #Creacion de canvas
+    c1 = TCanvas('c1','Mode: '+experiment+'- Side: '+keyword,1500,500)
+    c1.Divide(3,1)
+    c3 = TCanvas('c3','Selected Events',1500,500)
+    c3.Divide(3,1)
+    c4 = TCanvas('c4','Position Vs Amplitude')
+    c5 = TCanvas('c5','Position Vs Amplitude Distribution')
+
+    # Creando histogramas
+    leftHistogram   = TH1F('leftHistogram ','Left Channel Histogram; Average Peak Amplitude [V]',96,0,0.06)
+    centerHistogram = TH1F('centerHistogram','Center Channel Histogram; Average Peak Amplitude [V]',96,0,0.06)
+    rightHistogram  = TH1F('rightHistogram','Right Channel Histogram; Average Peak Amplitude [V]',96,0,0.06)
+    oneEvent_PosAmp = TH1F('oneEvent_PosAmp','Amplitude Vs Strip Coordinate; Amplitude [V]; Strip Coordinate #',8,0,8.5)
+    amplitudeDistr  = TH2F('amplitudeDistr','Position Vs Amplitude Distribution; Amplitude [V]; Strip Coordinate #',8,0,8.5,96,0,0.06)
+    selectedEventsCh1 = TMultiGraph('selectedEventsCh1','Ch1 Amplitude Vs Time - Selected Pulses; Time [s]; Amplitude [V]')
+    selectedEventsCh2 = TMultiGraph('selectedEventsCh2','Ch2 Amplitude Vs Time - Selected Pulses; Time [s]; Amplitude [V]')
+    selectedEventsCh3 = TMultiGraph('selectedEventsCh3','Ch3 Amplitude Vs Time - Selected Pulses; Time [s]; Amplitude [V]')
+    nentries=selectedData.GetEntries()
+
+
+    for i in tqdm(range(0, nentries)):
+        averageData.GetEntry(i)
+        selectedData.GetEntry(i)
+        leftHistogram.Fill(averageData.avgPeak1)
+        centerHistogram.Fill(averageData.avgPeak2)
+        rightHistogram.Fill(averageData.avgPeak3)
+        amplitudeDistr.Fill(3,averageData.avgPeak1)
+        amplitudeDistr.Fill(4,averageData.avgPeak2)
+        amplitudeDistr.Fill(5,averageData.avgPeak3)
+        if ((i%1)==0):
+            graph1 = TGraph(2502,selectedData.time,selectedData.ampCh1)
+            graph2 = TGraph(2502,selectedData.time,selectedData.ampCh2)
+            graph3 = TGraph(2502,selectedData.time,selectedData.ampCh3)
+            selectedEventsCh1.Add(graph1)
+            selectedEventsCh2.Add(graph2)
+            selectedEventsCh3.Add(graph3)
+            del graph1
+            del graph2
+            del graph3
+        
+        
+
+    oneEvent_PosAmp.SetBinContent(3,int(averageData.avgPeak1*1000))
+    oneEvent_PosAmp.SetBinContent(4,int(averageData.avgPeak2*1000))
+    oneEvent_PosAmp.SetBinContent(5,int(averageData.avgPeak3*1000))
+
+    #propiedades de histograma        
+    gStyle.SetOptFit(0111)
+
+
+    #Ajuste y dibujo de histogramas
+    c1.cd(1)
+    #leftHistogram.Fit('gaus','','',0.07995,0.15005)
+    leftHistogram.Draw()
+
+    c1.cd(2)
+    #centerHistogram.Fit('gaus','','',0.07995,0.15005)
+    centerHistogram.Draw()
+
+    c1.cd(3)
+    #rightHistogram.Fit('gaus','','',0.07995,0.15005)
+    rightHistogram.Draw()
+
+
+    c3.cd(1)
+    selectedEventsCh1.Draw('AL')
+    c3.cd(2)
+    selectedEventsCh2.Draw('AL')
+    c3.cd(3)
+    selectedEventsCh3.Draw('AL')
+
+    c4.cd()
+    oneEvent_PosAmp.Fit('gaus','','',1,7)
+    oneEvent_PosAmp.Draw()
+
+
+    c5.cd()
+    amplitudeDistr.Draw('colz')
+
+    c1.Update()
+    c3.Update()
+    c4.Update()
+    c5.Update()
+
+    print("Saving graphs into PDF...")
+    c1.SaveAs('../../graphs/test/'+experiment+'-'+keyword+' side.pdf')
+    c3.SaveAs('../../graphs/test/'+experiment+'-'+keyword+' - Selected Events.pdf')
+    c4.SaveAs('../../graphs/test/oneEvent_PosAmp.pdf')
+    c5.SaveAs('../../graphs/test/amplitudeDistr.pdf')
     return

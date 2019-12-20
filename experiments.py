@@ -118,6 +118,9 @@ def analyze(file):
         peakCh1 = 0
         peakCh2 = 0
         peakCh3 = 0
+        pedestalCh1 = 0
+        pedestalCh2 = 0
+        pedestalCh3 = 0
         avgPeakCh1 = 0
         avgPeakCh2 = 0
         avgPeakCh3 = 0
@@ -142,13 +145,21 @@ def analyze(file):
         peak3[0] = np.float32(peakCh3)   
         T3.Fill()
 
+        for sample in range(125):
+            pedestalCh1 += data.ampCh1[samplePeakCh1-312+sample]
+            pedestalCh2 += data.ampCh2[samplePeakCh2-312+sample]
+            pedestalCh3 += data.ampCh3[samplePeakCh3-312+sample]
+        pedestalCh1 = pedestalCh1/125.0
+        pedestalCh2 = pedestalCh2/125.0
+        pedestalCh3 = pedestalCh3/125.0
+
         for k in range(60):  
-            avgPeakCh1+=data.ampCh1[samplePeakCh1-30+k]
-            avgPeakCh2+=data.ampCh2[samplePeakCh2-30+k]
-            avgPeakCh3+=data.ampCh3[samplePeakCh3-30+k]
-        avgPeak1[0] = np.float32(avgPeakCh1/60.0)
-        avgPeak2[0] = np.float32(avgPeakCh2/60.0)
-        avgPeak3[0] = np.float32(avgPeakCh3/60.0)
+            avgPeakCh1 += data.ampCh1[samplePeakCh1-30+k]
+            avgPeakCh2 += data.ampCh2[samplePeakCh2-30+k]
+            avgPeakCh3 += data.ampCh3[samplePeakCh3-30+k]
+        avgPeak1[0] = np.float32(avgPeakCh1/60.0 - pedestalCh1)
+        avgPeak2[0] = np.float32(avgPeakCh2/60.0 - pedestalCh2)
+        avgPeak3[0] = np.float32(avgPeakCh3/60.0 - pedestalCh3)
         T4.Fill()
 
 
@@ -251,8 +262,8 @@ def graphAnalysis(file_input,experiment,keyword):
     c5.Update()
 
     print("Saving graphs into PDF...")
-    c1.SaveAs('../../graphs/test/'+experiment+'-'+keyword+' side.pdf')
-    c3.SaveAs('../../graphs/test/'+experiment+'-'+keyword+' - Selected Events.pdf')
-    c4.SaveAs('../../graphs/test/oneEvent_PosAmp.pdf')
-    c5.SaveAs('../../graphs/test/amplitudeDistr.pdf')
+    c1.SaveAs('../../graphs/'+experiment+'-'+keyword+'.pdf')
+    c3.SaveAs('../../graphs/'+experiment+'-'+keyword+' - Selected Events.pdf')
+    c4.SaveAs('../../graphs/'+experiment+'-'+keyword+' - oneEvent_PosAmp.pdf')
+    c5.SaveAs('../../graphs/'+experiment+'-'+keyword+' - amplitudeDistr.pdf')
     return

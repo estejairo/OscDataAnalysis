@@ -24,8 +24,8 @@ lst = list(filez)
 
 for file_input in lst:
     print "\n##########################\nProcessing file: "+file_input+"\n"
-    #select(file_input,ref_init_noise_rms,ref_final_noise_rms)
-    #analyze(file_input)
+    select(file_input,ref_init_noise_rms,ref_final_noise_rms)
+    analyze(file_input)
     if "free" in file_input:
         if "right" in file_input:
             graphAnalysis(file_input,"free","right")

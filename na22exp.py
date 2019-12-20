@@ -10,37 +10,37 @@
 ###########################################################
 
 from experiments import select, analyze, graphAnalysis
+import Tkinter as tk
+import Tkconstants, tkFileDialog, tkSimpleDialog
 
-import time
-from tqdm import tqdm #libreria para visualizar porcentaje restante
 
-EVENTOS = 2000
-MUESTRAS = 2502
 ref_init_noise_rms = 0.005
 ref_final_noise_rms = 0.005
 
-# ROOT = tk.Tk()
-# ROOT.withdraw()
-# filez = tkFileDialog.askopenfilenames(parent=root,title='Choose files')
-# lst = list(filez)
+ROOT = tk.Tk()
+ROOT.withdraw()
+filez = tkFileDialog.askopenfilenames(parent=ROOT,title='Choose files')
+lst = list(filez)
 
-# for file_input in lst:
-#     select(file_input,ref_init_noise_rms,ref_final_noise_rms)
-#     analyze(file_input)
-
-file_input = "../../data/na22-free-rigth.root"
-experiment="free"
-keyword = "right"
-
-## Data Selection
-#select(file_input,ref_init_noise_rms,ref_final_noise_rms)
-
-## Average Peak voltage per event
-#analyze(file_input)
-
-
-## Data graph
-graphAnalysis(file_input,experiment,keyword)
+for file_input in lst:
+    print "\n##########################\nProcessing file: "+file_input+"\n"
+    #select(file_input,ref_init_noise_rms,ref_final_noise_rms)
+    #analyze(file_input)
+    if "free" in file_input:
+        if "right" in file_input:
+            graphAnalysis(file_input,"free","right")
+        elif "center" in file_input:
+            graphAnalysis(file_input,"free","center")
+        else:
+            graphAnalysis(file_input,"free","left")
+    else:
+        if "right" in file_input:
+            graphAnalysis(file_input,"collimator","right")
+        elif "center" in file_input:
+            graphAnalysis(file_input,"collimator","center")
+        else:
+            graphAnalysis(file_input,"collimator","left")
+    
 
 z = raw_input('Press "ENTER" to exit.')
 

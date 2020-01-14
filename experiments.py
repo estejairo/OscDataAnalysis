@@ -2,10 +2,14 @@
 #
 #   En este script se definen las funciones necesarias para
 #   analisis de datos muestrados en texto mediante un 
-#   osciloscopio.
+#   osciloscopio. Se sugiere utilizar en orden:
+#   select, analyze y graphAnalysis.
+#   Los datos a usar en select deben haber sido procesados
+#   por Treemaker.py. 
+#   
 #  
 #   Autor: Jairo Gonzalez
-#   Estado: En desarrollo
+#   Estado: Terminado
 #
 ###########################################################
 
@@ -22,8 +26,10 @@ from tqdm import tqdm #libreria para visualizar porcentaje restante
 #   select
 #   Selecciona los eventos del archivo file_input que
 #   posean ruido rms menor a las referencias de ruido al
-#   inicio y al medio del eventi (ref_init_noise_rms y 
-#   ref_final_noise_rms respectivamente.)
+#   inicio y al medio del evento (ref_init_noise_rms y 
+#   ref_final_noise_rms respectivamente). Los resultados
+#   se almacenan en el mismo archivo original, en un nuevo
+#   arbol.
 #
 ###########################################################
 def select(file_input,ref_init_noise_rms,ref_final_noise_rms):
@@ -70,7 +76,16 @@ def select(file_input,ref_init_noise_rms,ref_final_noise_rms):
     return
 
 
-
+###########################################################
+#
+#   analyze
+#   Analiza los eventos del archivo file_input, guardando
+#   en un arbol los valores maximos de cada pulso y en 
+#   otro arbol los valores medios en torno a dichos 
+#   maximos. Los arboles se guardan en el mismo archivo
+#   original.
+#
+###########################################################
 def analyze(file):
     print("Starting Analysis Algorithm...")
     # Abriendo archivos y cargando arboles
@@ -169,6 +184,14 @@ def analyze(file):
     F1.Close()
     return
 
+
+###########################################################
+#
+#   graphAnalysis
+#   Grafica los eventos del archivo file_input, generando
+#   histogramas de distinas dimensiones.
+#
+###########################################################
 def graphAnalysis(file_input,experiment,keyword):
 
     ##Graphs

@@ -5,7 +5,7 @@
 #   los canales medidos respecto a la fuente radioactiva.
 #  
 #   Autor: Jairo Gonzalez
-#   Estado: En desarrollo
+#   Estado: Terminado
 #
 ###########################################################
 
